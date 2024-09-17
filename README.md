@@ -1,28 +1,21 @@
-# Exam
--Please do composer install
+# README
 
--npm install
+## Setup
+- Copy `.env.example` to `.env`
+- Setup your database and update `.env` accordingly
+- Run the following commands 
+  - `composer install`
+  - `npm install`
+  - `npm run build`
+  - `php artisan key:generate`
+  - `php artisan migration --seed`
 
--npm run build
+## Default Admin User
 
--copy .env.example to .env
+- email: admin@example.com
+- password: P@ssword!123
 
--setup database
-
--php artisan key:generate
-
--php artisan migration --seed
-
--default user
-
--email: admin@example.com
-
--password: P@ssword!123
-
--I also created test unit for UsersController only
-
--The password and confirm password in users are displayed even they are first login
-
--Pagination is by 5 
-
--You can run tests using php artisan test
+## Notes
+- I also created test unit for UsersController only
+- Pagination is by 5 
+- You can run tests using `php artisan test`
