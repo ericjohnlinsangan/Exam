@@ -1,14 +1,15 @@
 # README
 
-## Setup
+## Setup locally
 - Copy `.env.example` to `.env`
 - Setup your database and update `.env` accordingly
 - Run the following commands 
   - `composer install`
   - `npm install`
-  - `npm run build`
   - `php artisan key:generate`
   - `php artisan migration --seed`
+  - `npm run dev`
+  - `php artisan serve`
 
 ## Default Admin User
 
