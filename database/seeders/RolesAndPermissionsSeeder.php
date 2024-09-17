@@ -46,6 +46,6 @@ class RolesAndPermissionsSeeder extends Seeder
             ]
         );
 
-        $adminUser->assignRole('admin');
+        $adminUser->assignRole('Admin');
     }
 }
