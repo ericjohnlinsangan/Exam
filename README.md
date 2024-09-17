@@ -17,6 +17,6 @@
 - password: P@ssword!123
 
 ## Notes
-- I also created test unit for UsersController only
+- I also created test unit for UsersController and UserService only
 - Pagination is by 5 
 - You can run tests using `php artisan test`
