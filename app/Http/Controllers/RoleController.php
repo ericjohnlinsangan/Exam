@@ -19,6 +19,8 @@ class RoleController extends Controller
 
     public function index(Request $request)
     {
+        $this->authorize('view roles');
+
         $search = $request->input('search', '');
         $roles = $this->roleService->getRolesPaginated(5, $search);
         return view('roles.index', compact('roles', 'search'));
@@ -26,12 +28,16 @@ class RoleController extends Controller
 
     public function create()
     {
+        $this->authorize('create roles');
+
         $permissions = $this->permissionService->getPermissions();
         return view('roles.create', compact('permissions'));
     }
 
     public function store(Request $request)
     {
+        $this->authorize('create roles');
+
         $validatedData = $request->validate([
             'name' => 'required|string|max:255|unique:roles,name',
             'permissions' => 'required|array',
@@ -45,6 +51,8 @@ class RoleController extends Controller
 
     public function edit($id)
     {
+        $this->authorize('edit roles');
+
         $role = $this->roleService->getRoleById($id);
         $permissions = $this->permissionService->getPermissions();
         $rolePermissions = $role->permissions->pluck('id')->toArray();
@@ -54,6 +62,8 @@ class RoleController extends Controller
 
     public function update(Request $request, $id)
     {
+        $this->authorize('edit roles');
+
         $validatedData = $request->validate([
             'name' => 'required|string|max:255|unique:roles,name,' . $id,
             'permissions' => 'required|array',
@@ -71,6 +81,8 @@ class RoleController extends Controller
 
     public function destroy($id)
     {
+        $this->authorize('delete roles');
+
         $success = $this->roleService->deleteRole($id);
 
         if ($success) {

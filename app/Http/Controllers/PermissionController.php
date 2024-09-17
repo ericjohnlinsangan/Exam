@@ -16,6 +16,8 @@ class PermissionController extends Controller
 
     public function index(Request $request)
     {
+        $this->authorize('view permissions');
+
         $search = $request->input('search', '');
         $permissions = $this->permissionService->getPermissionsPaginated(5, $search);
         return view('permissions.index', compact('permissions', 'search'));

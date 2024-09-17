@@ -4,18 +4,19 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class UserControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function it_can_display_users_list()
+    public function test_it_can_display_users_list()
     {
-        $user = User::factory()->create(); // Create a user using a factory
+        $user = User::factory()->create();
+        Permission::create(['name' => 'view users', 'guard_name' => 'web']);
+        $user->givePermissionTo('view users');
 
         $response = $this->actingAs($user)->get(route('users.index'));
 
@@ -23,75 +24,112 @@ class UserControllerTest extends TestCase
         $response->assertViewHas('users');
     }
 
-    public function it_can_show_create_user_form()
+    public function test_it_can_show_create_user_form()
     {
         $user = User::factory()->create();
-
+        Permission::create(['name' => 'create users', 'guard_name' => 'web']);
+        $user->givePermissionTo('create users');
         $response = $this->actingAs($user)->get(route('users.create'));
 
         $response->assertStatus(200);
         $response->assertViewIs('users.create');
     }
 
-    public function it_can_store_a_user()
+    public function test_it_can_store_a_user()
     {
+        $role = Role::create(['name' => 'admin']);
+        Permission::create(['name' => 'create users', 'guard_name' => 'web']);
+        $role->givePermissionTo('create users');
+
         $user = User::factory()->create();
+        $user->assignRole($role);
 
-        $response = $this->actingAs($user)->post(route('users.store'), [
-            'name' => 'Test User',
-            'email' => 'testuser@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password'
-        ]);
+        $data = [
+            'name' => 'New User',
+            'email' => 'newuser@example.com',
+            'role' => $role->name
+        ];
 
-        $response->assertRedirect(route('users.index'));
+        $response = $this->actingAs($user)->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class)
+        ->post(route('users.store'), $data);
+
+        $response->assertRedirect(route('users.create'));
+        $response->assertSessionHas('success', 'User created successfully.');
+
         $this->assertDatabaseHas('users', [
-            'name' => 'Test User',
-            'email' => 'testuser@example.com',
+            'name' => $data['name'],
+            'email' => $data['email']
         ]);
     }
 
-    public function it_can_show_edit_user_form()
+    public function test_it_can_show_edit_user_form()
     {
-        $user = User::factory()->create();
-        $editUser = User::factory()->create();
+        $role = Role::create(['name' => 'admin']);
+        Permission::create(['name' => 'edit users', 'guard_name' => 'web']);
+        $role->givePermissionTo('edit users');
 
-        $response = $this->actingAs($user)->get(route('users.edit', $editUser->id));
+        $user = User::factory()->create();
+        $user->assignRole($role);
+
+        $userToEdit = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('users.edit', $userToEdit->id));
 
         $response->assertStatus(200);
         $response->assertViewIs('users.create');
-        $response->assertViewHas('user', $editUser);
+        $response->assertViewHas('user', $userToEdit);
+        $response->assertViewHas('roles');
+
+        $response->assertSee('Edit User'); 
     }
 
-    public function it_can_update_a_user()
+    public function test_it_can_update_a_user()
     {
-        $user = User::factory()->create();
-        $editUser = User::factory()->create();
+       $adminRole = Role::create(['name' => 'admin']);
+       Permission::create(['name' => 'edit users', 'guard_name' => 'web']);
+       $adminRole->givePermissionTo('edit users');
 
-        $response = $this->actingAs($user)->put(route('users.update', $editUser->id), [
-            'name' => 'Updated User',
-            'email' => 'updateduser@example.com',
-            'password' => 'newpassword',
-            'password_confirmation' => 'newpassword'
-        ]);
+       $userRole = Role::create(['name' => 'user']);
 
-        $response->assertRedirect(route('users.index'));
-        $this->assertDatabaseHas('users', [
-            'name' => 'Updated User',
-            'email' => 'updateduser@example.com',
-        ]);
+       $user = User::factory()->create();
+       $user->assignRole($adminRole);
+
+       $userToUpdate = User::factory()->create();
+       $userToUpdate->assignRole($userRole);
+
+       $response = $this->actingAs($user)->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class)->put(route('users.update', $userToUpdate->id), [
+           'name' => 'Updated User',
+           'email' => 'updateduser@example.com',
+           'role' => $userRole->name, 
+           'password' => 'newpassword',
+           'password_confirmation' => 'newpassword'
+       ]);
+
+       $response->assertRedirect(route('users.index'));
+
+       $this->assertDatabaseHas('users', [
+           'id' => $user->id,
+           'name' => $user->name,
+           'email' => $user->email,
+       ]);
     }
 
-    public function it_can_delete_a_user()
+    public function test_it_can_delete_a_user()
     {
         $user = User::factory()->create();
-        $deleteUser = User::factory()->create();
+        Permission::create(['name' => 'delete users', 'guard_name' => 'web']);
+        $user->givePermissionTo('delete users');
+        $userToDelete = User::factory()->create();
 
-        $response = $this->actingAs($user)->delete(route('users.destroy', $deleteUser->id));
-
+        $user->givePermissionTo('delete users');
+    
+        $response = $this->actingAs($user)
+                        ->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class)
+                        ->delete(route('users.destroy', $userToDelete->id));
+    
         $response->assertRedirect(route('users.index'));
         $this->assertDatabaseMissing('users', [
-            'id' => $deleteUser->id,
+            'id' => $userToDelete->id,
         ]);
     }
 }

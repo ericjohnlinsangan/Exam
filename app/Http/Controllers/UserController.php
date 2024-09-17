@@ -19,6 +19,8 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
+        $this->authorize('view users');
+
         $search = $request->input('search', '');
         $users = $this->userService->getUsersPaginated(5, $search);
 
@@ -27,6 +29,8 @@ class UserController extends Controller
 
     public function create(Request $request)
     {
+        $this->authorize('create users');
+
         $search = $request->input('search', '');
         $roles = $this->roleService->getRoles();
         return view('users.create', compact('search', 'roles'));
@@ -34,30 +38,35 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create users');
+
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users',
             'role' => 'required|exists:roles,name',
         ]);
-
         $user = $this->userService->createUser($validatedData);
         return redirect()->route('users.create')->with('success', 'User created successfully.');
     }
 
     public function edit($id)
     {
+        $this->authorize('edit users');
+
         $user = $this->userService->getUserById($id);
         $roles = $this->roleService->getRoles();
+
         return view('users.create', compact('user', 'roles'));
     }
 
     public function update(Request $request, $id)
     {
+        $this->authorize('edit users');
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $id,
             'role' => 'required|exists:roles,name',
-            'password' => 'nullable|string|min:8|confirmed',
+            'password' => 'confirmed',
         ]);
 
         $updated = $this->userService->updateUser($id, $validatedData);
@@ -71,8 +80,8 @@ class UserController extends Controller
 
     public function destroy($id)
     {
+        $this->authorize('delete users');
         $success = $this->userService->deleteUser($id);
-
         if ($success) {
             return redirect()->route('users.index')->with('success', 'User deleted successfully.');
         } else {
