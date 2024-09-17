@@ -38,15 +38,21 @@
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav me-auto">
                         @auth
+                            @can('view users')
                             <li class="nav-item">
                                 <a class="nav-link {{ Route::is('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">{{ __('Users') }}</a>
                             </li>
+                            @endcan
+                            @can('view roles')
                             <li class="nav-item">
                                 <a class="nav-link {{ Route::is('roles.*') ? 'active' : '' }}" href="{{ route('roles.index') }}">{{ __('Roles') }}</a>
                             </li>
+                            @endcan
+                            @can('view permissions')
                             <li class="nav-item">
                                 <a class="nav-link {{ Route::is('permissions.*') ? 'active' : '' }}" href="{{ route('permissions.index') }}">{{ __('Permissions') }}</a>
                             </li>
+                            @endcan
                         @endauth
                     </ul>
 

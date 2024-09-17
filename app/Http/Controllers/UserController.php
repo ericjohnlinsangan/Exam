@@ -46,7 +46,7 @@ class UserController extends Controller
             'role' => 'required|exists:roles,name',
         ]);
         $user = $this->userService->createUser($validatedData);
-        return redirect()->route('users.create')->with('success', 'User created successfully.');
+        return redirect()->route('users.index')->with('success', 'User created successfully.');
     }
 
     public function edit($id)

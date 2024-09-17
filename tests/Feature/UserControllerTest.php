@@ -53,7 +53,7 @@ class UserControllerTest extends TestCase
         $response = $this->actingAs($user)->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class)
         ->post(route('users.store'), $data);
 
-        $response->assertRedirect(route('users.create'));
+        $response->assertRedirect(route('users.index'));
         $response->assertSessionHas('success', 'User created successfully.');
 
         $this->assertDatabaseHas('users', [
