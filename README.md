@@ -1,13 +1,22 @@
 # Exam
 -Please do composer install
+
 -npm install
+
 -npm run build
+
 -copy .env.example to .env
--setup database,
--php artisan key:generate,
+
+-setup database
+
+-php artisan key:generate
+
 -php artisan migration --seed
+
 -default user
+
 -email: admin@example.com
+
 -password: P@ssword!123
 
 -I also created test unit for UsersController only
